@@ -1,9 +1,8 @@
 #include <iostream>
-#include "deck.h"
+#include "game.h"
 
 int main() {
-    Deck deckA;
-    deckA.shuffle();
-    deckA.printDeck();
+    Game game;
+    game.printTable();
     return 0;
 }
