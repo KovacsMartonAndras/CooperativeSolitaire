@@ -3,5 +3,4 @@
 Link to rules: https://pasziansz.net/sikanoz.html
 
 TODO: 
-- Implement a better print function/management of players
-- Implement simulation, rules into game class
+- Implement simulation, rules into game class (currently finding bug with simulation process, somewhere the current card is assigned to be an invalid/null pointer)
