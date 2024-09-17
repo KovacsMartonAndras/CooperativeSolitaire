@@ -8,11 +8,6 @@
 
 /*
 Class that holds the state of the table
-- player_1 is a vector of length 3 representing 
-    - 0: Primary pile (Segédtalon)
-    - 1: Secondary pile (Talon)
-    - 2: Throwaway pile (Domb)
-    (Same for player 2)
 - helper_decks is a vector of length 8 representing 
     the 8 piles that are next to the main pile (Alakzat)
 - main_decks is a vector of length 8 representing 
@@ -20,22 +15,29 @@ Class that holds the state of the table
 */
 class Table{
     public:
-        std::vector<std::vector<Card>> player_1; 
-        std::vector<std::vector<Card>> player_2; 
-        std::vector<std::vector<Card>> helper_decks; 
-
         std::vector<std::vector<Card>> main_decks;
+        std::vector<std::vector<Card>> helper_decks; 
+        Table():main_decks(8){}
 
-        // Constructor for the two helper decks on the sides and the main deck
-        Table():player_1(3),player_2(3),helper_decks(8),main_decks(8){}
-        bool player_1_hand_empty();
-        bool player_2_hand_empty();
 };
 
 class Player {
 public:
+    std::string name;
+    std::vector<Card> primary_deck; 
+    std::vector<Card> secondary_deck;
+    std::vector<Card> throwaway_deck;
+
+    // Constructor
+    Player(const std::string& playerName) : name(playerName) {
+    }
     // Decision making functions
     int handle_throw_on_opponent(Table table);
+
+    // Helper functions
+    bool hand_empty();
+    void move_card_to_throwaway();
+    void reshuffle_throwaway_to_secondary();
 
 };
 
@@ -49,14 +51,14 @@ public:
 
     // 
     void start_game();
-    bool perform_checks(int c_player_index);
-    bool check_main_deck(int c_player_index);
-    bool check_primary(int c_player_index);
-    bool check_secondary(int c_player_index);
+    bool perform_checks(Player* c_player);
+    bool check_main_deck();  // Non dependent on current player
+    bool check_primary(Player* c_player);
+    bool check_secondary(Player* c_player);
 
     // Helper functions
     void printTable();
-    void printHandsOfPlayer(unsigned int playerID);
+    void printHandsOfPlayer();
     void printMain();
     void printHelper();
 

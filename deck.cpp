@@ -32,7 +32,7 @@ std::string Deck::cardColorToName(unsigned int color){
         case 1: return "Diamonds";
         case 2: return "Spades";
         case 3: return "Hearts";
-        default: return "Error";
+        default: return "Color_name_error, Invalid Card";
     }
 }
 
