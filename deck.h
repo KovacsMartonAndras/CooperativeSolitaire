@@ -18,8 +18,6 @@ public:
 
     std::string cardValueToName(unsigned int value);
     std::string cardColorToName(unsigned int color);
-
-private:
     std::vector<Card> cards;
 };
 

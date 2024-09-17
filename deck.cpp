@@ -3,7 +3,7 @@
 
 Deck::Deck() {
     for (unsigned int color = 0; color < 4; ++color) {
-        for (unsigned int value = 0; value < 14; ++value) {
+        for (unsigned int value = 1; value < 14; ++value) {
             cards.push_back(Card{value, color});
         }
     }
@@ -17,11 +17,12 @@ void Deck::shuffle() {
 
 std::string Deck::cardValueToName(unsigned int value){
     switch (value) {
-        case 0: return "Ace";
+        case 1: return "Ace";
         case 11: return "Jack";
         case 12: return "Queen";
         case 13: return "King";
-        default: return std::to_string(value);
+        default: 
+            return std::to_string(value);
     }
 }
 
@@ -31,7 +32,7 @@ std::string Deck::cardColorToName(unsigned int color){
         case 1: return "Diamonds";
         case 2: return "Spades";
         case 3: return "Hearts";
-        default: return std::to_string(color);
+        default: return "Error";
     }
 }
 
