@@ -28,15 +28,21 @@ public:
     std::vector<Card> secondary_deck;
     std::vector<Card> throwaway_deck;
 
+    float tendency_to_throw;
+    float tendency_to_throw_on_primary;
+    float tendency_to_throw_on_throwaway;
+
     // Constructor
-    Player(const std::string& playerName) : name(playerName) {
+    Player(const std::string& playerName,float overall_t=0,float primary_t=0,float throwaway_t=0) : 
+    name(playerName), tendency_to_throw(overall_t),tendency_to_throw_on_primary(primary_t),
+    tendency_to_throw_on_throwaway(throwaway_t) {
     }
     // Decision making functions
-    int handle_throw_on_opponent(Table table);
-
+    bool handle_throw_on_opponent();
+    bool handle_throw_on_opponent_primary();
+    bool handle_throw_on_opponent_throwaway();
     // Helper functions
     bool hand_empty();
-    void move_card_to_throwaway();
     void reshuffle_throwaway_to_secondary();
 
 };
@@ -47,17 +53,21 @@ implements the rules and simulates the game
 */
 class Game {
 public:
-    Game(Player player_1, Player player_2);
-
+    Game(Player player_1, Player player_2, unsigned int max_turns = 200, bool debug_mode = false);
+    bool DEBUGMODE;
+    unsigned int MAX_TURNS;
     // 
     void start_game();
     bool perform_checks(Player* c_player);
     bool check_main_deck();  // Non dependent on current player
     bool check_primary(Player* c_player);
     bool check_secondary(Player* c_player);
+    bool check_opponents_piles(Player* c_player);
+    bool move_card_to_deck(std::vector<Card>& source_deck, std::vector<Card>& target_deck);
 
     // Helper functions
     void printTable();
+    void printNumberOfCards(Player* c_player);
     void printHandsOfPlayer();
     void printMain();
     void printHelper();

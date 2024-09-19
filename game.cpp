@@ -3,14 +3,16 @@
 #include <algorithm>  
 #include <utility>
 
-Game::Game(Player p_1,Player p_2)
+Game::Game(Player p_1,Player p_2 , unsigned int max_turns, bool debugmode)
 {
    
     players.push_back(p_1);
     players.push_back(p_2);
 
-    // TODO Determine who goes first
-    std::cout << "Dealing cards" << std::endl;
+    DEBUGMODE = debugmode;
+    MAX_TURNS = max_turns;
+    // TODO Determine who goes first TODO
+    if (DEBUGMODE){std::cout << "Dealing cards" << std::endl;};
 
     unsigned int player_count = 0; // Used as an offset in the init of helper decks
     // 13 cards to primary
@@ -18,37 +20,36 @@ Game::Game(Player p_1,Player p_2)
     {
         Deck deck;
         unsigned int offset;
-        player_count == 0 ? offset = 0 : offset = 4;
+        player_count == 0 ? offset = 0 : offset = 4;  // Used for dealing cards to helper decks
+
         // Shuffle decks
-        std::cout << "Shuffling decks" << std::endl;
+        if (DEBUGMODE){std::cout << "Shuffling decks" << std::endl;};
         deck.shuffle();
 
         for(unsigned int i=0; i < 13 ; i++)
         {
-            player.primary_deck.push_back(deck.cards.back());
-            deck.cards.pop_back();
+            move_card_to_deck(deck.cards,player.primary_deck);
         }
-        std::cout << "Number of cards in "<< player.name <<" primary deck: " << player.primary_deck.size() << std::endl;
+        if (DEBUGMODE){std::cout << "Number of cards in "<< player.name <<" primary deck: " << player.primary_deck.size() << std::endl;};
         for(unsigned int i=0; i < 4 ; i++)
         {
             table.helper_decks.push_back(std::vector<Card>());  // Add empty vector for new deck
-            table.helper_decks.at(i+offset).push_back(deck.cards.back());
-            deck.cards.pop_back();
+            move_card_to_deck(deck.cards,table.helper_decks.at(i+offset));
+
         }
-        std::cout << "Number of cards in "<< player.name <<" helper deck: " << table.helper_decks.size() << std::endl;
+        if (DEBUGMODE){std::cout << "Number of cards in "<< player.name <<" helper deck: " << table.helper_decks.size() << std::endl;};
 
         // Rest to the secondary pile
-        while(!deck.cards.empty())
-        {
-            player.secondary_deck.push_back(deck.cards.back());
-            deck.cards.pop_back();
-        }
-        std::cout << "Number of cards in "<< player.name <<" secondary deck: " << player.secondary_deck.size() << std::endl;
+        while(move_card_to_deck(deck.cards,player.secondary_deck));
+       
+        if (DEBUGMODE){std::cout << "Number of cards in "<< player.name <<" secondary deck: " << player.secondary_deck.size() << std::endl;};
         player_count += 1;
     }
 
-    printTable();
-    std::cout << "Game is ready" << std::endl;
+    if (DEBUGMODE){
+        printTable();
+        std::cout << "Game is ready" << std::endl;
+    }
 }
 
 void Game::start_game()
@@ -56,18 +57,37 @@ void Game::start_game()
     // Player 1 starts
     int current_player_index = 1;
     Player* c_player = &players.at(!current_player_index);
+    unsigned int turn_counter = 0;
+    bool infinite_game = false;
 
     // Both Players are not out of the game
     while(!(players.at(0).hand_empty() || players.at(1).hand_empty()))
     {
+        if (turn_counter > MAX_TURNS)
+        {
+            infinite_game = true;
+            break;
+        }
+
         // Player 1 starts
         c_player = &players.at(!current_player_index);
         current_player_index = !current_player_index;  // Invert current player index
-        //std::cout<< "Current Player: " << current_player_index << std::endl;
-        while(perform_checks(c_player)); // Perform checks and move cards until no move is possible
-    }
-    std::cout<< "End of game" << std::endl;
 
+        //std::cout<< "Current Player: " << c_player->name << std::endl;
+        while(perform_checks(c_player)); // Perform checks and move cards until no move is possible
+        if (DEBUGMODE){printNumberOfCards(c_player);};
+        turn_counter += 1;
+    }
+
+    if (!infinite_game)
+    {
+        std::cout<< "End of game" << std::endl;
+    std::cout << "Number of turns: " << turn_counter << std::endl;
+    players.at(0).hand_empty() ? std::cout << "Winner: Player 1" << std::endl : std::cout << "Winner: Player 2" << std::endl ;
+    }
+    else{
+        std::cout<< "Game could not be finised" << std::endl;
+    }
 }
 bool Game::perform_checks(Player* c_player)
 {
@@ -91,10 +111,14 @@ bool Game::perform_checks(Player* c_player)
     
     // This is where checking if throw to opponents pile would be checked and the handle function from the player is called
 
+    if(!moved)
+    {
+        moved = check_opponents_piles(c_player);
+    }
     // No moves -> move secondary to throwaway pile
     if(!moved)
     {
-        c_player->move_card_to_throwaway();
+        move_card_to_deck(c_player->secondary_deck,c_player->throwaway_deck);
         if (c_player->secondary_deck.size() == 0)
         {
             c_player->reshuffle_throwaway_to_secondary();
@@ -117,9 +141,7 @@ bool Game::check_main_deck()
                 else{
                     // Can fill main deck from helper
                     std::cout<< "Moved " << cardColorToName(helper_deck.back().color) << " " << cardValueToName(helper_deck.back().value)  << " from helper deck to main deck."<< std::endl;
-                    main_deck.push_back(helper_deck.back());
-                    helper_deck.pop_back();  // Remove moved card
-                    return true;
+                    return move_card_to_deck(helper_deck,main_deck);
                 }
             }
             else if (!main_deck.empty())
@@ -130,9 +152,7 @@ bool Game::check_main_deck()
                     // Can fill main deck from helper
                     std::cout<< "Moved " << cardColorToName(helper_deck.back().color) << " " << cardValueToName(helper_deck.back().value) 
                     << " from helper deck onto " << cardColorToName(main_deck.back().color) << " " << cardValueToName(main_deck.back().value) << " in main deck" << std::endl;
-                    main_deck.push_back(helper_deck.back());
-                    helper_deck.pop_back();  // Remove moved card
-                    return true;
+                    return move_card_to_deck(helper_deck,main_deck);
                 }
             }
         }    
@@ -161,9 +181,7 @@ bool Game::check_primary(Player* c_player){
             }
             else{
                 std::cout<< "Moved " << cardColorToName(current_card->color) << " " << cardValueToName(current_card->value) << " from primary deck to main deck"<< std::endl;
-                main_deck.push_back(*current_card);
-                c_player->primary_deck.pop_back(); // Remove moved card
-                return true;
+                return move_card_to_deck(c_player->primary_deck,main_deck);
             }
         }
         else if (!main_deck.empty())
@@ -174,9 +192,7 @@ bool Game::check_primary(Player* c_player){
             // Can fill main deck from helper
             std::cout<< "Moved " << cardColorToName(current_card->color) << " " << cardValueToName(current_card->value) 
             << " from primary deck onto " << cardColorToName(main_deck.back().color) << " " << cardValueToName(main_deck.back().value) << " in main deck"<< std::endl;
-            main_deck.push_back(*current_card);
-            c_player->primary_deck.pop_back(); // Remove moved card
-            return true;
+            return move_card_to_deck(c_player->primary_deck,main_deck);
             }
         }
     }    
@@ -192,17 +208,12 @@ bool Game::check_primary(Player* c_player){
                 // Can fill helper_deck from primary
                 std::cout<< "Moved " << cardColorToName(current_card->color) << " " << cardValueToName(current_card->value) 
                 << " onto " << cardColorToName(helper_deck.back().color) << " " << cardValueToName(helper_deck.back().value) << " from primary deck to helper deck"<< std::endl;
-                helper_deck.push_back(*current_card);
-                c_player->primary_deck.pop_back(); // Remove moved card
-                return true;
+                return move_card_to_deck(c_player->primary_deck,helper_deck);
             }
         }
         else
         {
-            //Place is empty, simply put it out
-            helper_deck.push_back(*current_card);
-            c_player->primary_deck.pop_back(); // Remove moved card
-            return true;
+            return move_card_to_deck(c_player->primary_deck,helper_deck);
         }
     }    
     return false;
@@ -227,9 +238,7 @@ bool Game::check_secondary(Player* c_player)
             }
             else{
                 std::cout<< "Moved " << cardColorToName(current_card->color) << " " << cardValueToName(current_card->value) << " from secondary deck to main deck"<< std::endl;
-                main_deck.push_back(*current_card);
-                c_player->secondary_deck.pop_back(); // Remove moved card
-                return true;
+                return move_card_to_deck(c_player->secondary_deck,main_deck);
             }
         }
         else if (!main_deck.empty())
@@ -240,9 +249,7 @@ bool Game::check_secondary(Player* c_player)
             // Can fill main deck from helper
             std::cout<< "Moved " << cardColorToName(current_card->color) << " " << cardValueToName(current_card->value) 
             << " from secondary deck onto " << cardColorToName(main_deck.back().color) << " " << cardValueToName(main_deck.back().value) << " in main deck"<< std::endl;
-            main_deck.push_back(*current_card);
-            c_player->secondary_deck.pop_back(); // Remove moved card
-            return true;
+             return move_card_to_deck(c_player->secondary_deck, main_deck);
             }
         }
     }    
@@ -258,25 +265,31 @@ bool Game::check_secondary(Player* c_player)
             // Can fill helper_deck from secondary
             std::cout<< "Moved " << cardColorToName(current_card->color) << " " << cardValueToName(current_card->value) 
             << " onto " << cardColorToName(helper_deck.back().color) << " " << cardValueToName(helper_deck.back().value) << " from secondary deck to helper deck"<< std::endl;
-            helper_deck.push_back(*current_card);
-            c_player->secondary_deck.pop_back(); // Remove card from secondary pile
-            return true;
+            return move_card_to_deck(c_player->secondary_deck,helper_deck);
         }
         }
         else if (helper_deck.empty() && c_player->primary_deck.empty())
         {
             //Place is empty and primary deck is also empty, simply put it out
-            helper_deck.push_back(*current_card);
-            c_player->secondary_deck.pop_back(); // Remove moved card
-        }
-        
-        else{
-            std::cout<< "error in placement logic" << std::endl;
+             return move_card_to_deck(c_player->secondary_deck,helper_deck);
         }
     }    
     return false;
 }
+bool Game::check_opponents_piles(Player* c_player)
+{
+    //Check primary availability
+    if(c_player->handle_throw_on_opponent())
+    {
+        if(c_player->primary_deck.empty())
+        {
+        return false;
+        }
+        //TODO...
+    }
+    return false; // No card is thrown
 
+}
 
 void Game::printTable(){
     printHandsOfPlayer();
@@ -285,6 +298,15 @@ void Game::printTable(){
     
 };
 
+void Game::printNumberOfCards(Player* c_player)
+{
+    std::cout<< c_player->name << std::endl;
+    std::cout<< "Number of cards in primary deck: " << c_player->primary_deck.size() << std::endl;
+    std::cout<< "Number of cards in secondary deck: " << c_player->secondary_deck.size() << std::endl;
+    std::cout<< "Number of cards in throwaway deck: " << c_player->throwaway_deck.size() << std::endl;
+    unsigned int nr_cards = c_player->primary_deck.size() + c_player->secondary_deck.size() + c_player->throwaway_deck.size();
+    std::cout<< "Number of cards at current player: " << nr_cards << std::endl;
+}
 void Game::printHandsOfPlayer()
 {
     for (Player player : players)
@@ -359,6 +381,23 @@ std::string Game::cardColorToName(unsigned int color){
         default: return std::to_string(color);
     }
 }
+/*
+Move top card of source deck to target deck
+return true on a success
+false on failure or invalid move
+*/
+bool Game::move_card_to_deck(std::vector<Card>& source_deck, std::vector<Card>& target_deck)
+{
+    if(source_deck.empty())
+    {
+        return false;
+    }
+    // Move the top card from source_deck to target_deck
+    target_deck.push_back(std::move(source_deck.back()));
+    source_deck.pop_back();
+    return true;
+}
+
 
 bool Player::hand_empty()
 {
@@ -376,14 +415,33 @@ void Player::reshuffle_throwaway_to_secondary()
 
     //std::cout<< "Reshuffled throwaway to secondary" << std::endl;
 }
-
-void Player::move_card_to_throwaway()
+bool Player::handle_throw_on_opponent()
 {
-    throwaway_deck.push_back(secondary_deck.back());
-    secondary_deck.pop_back();
+    return get_decision(tendency_to_throw); // Don't throw card
+}
+bool Player::handle_throw_on_opponent_primary()
+{
+    return get_decision(tendency_to_throw_on_primary); // Don't throw card
+}
+bool Player::handle_throw_on_opponent_throwaway()
+{
+    return get_decision(tendency_to_throw_on_throwaway); // Don't throw card
 }
 
-int Player::handle_throw_on_opponent(Table table)
-{
-    return 0; // Don't throw card
+
+bool get_decision(float probability) {
+    if (probability == 1)
+    {
+        return true;
+    }
+    else if (probability == 0){
+        return false;
+    }
+
+    std::random_device rd;                         
+    std::mt19937 generator(rd());              
+    std::uniform_real_distribution<float> dist(0.0f, 1.0f); // Create a distribution between 0 and 1
+
+    // Generate a random float and compare it with the probability
+    return dist(generator) < probability;
 }

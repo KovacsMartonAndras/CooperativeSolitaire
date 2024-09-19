@@ -17,6 +17,7 @@ void Deck::shuffle() {
 
 std::string Deck::cardValueToName(unsigned int value){
     switch (value) {
+        case 0: return "Error in cards management";
         case 1: return "Ace";
         case 11: return "Jack";
         case 12: return "Queen";
