@@ -15,7 +15,7 @@ From now on let us denote the two players by *A* and *B*.
 - They each need to shuffle them and distribute the following number of cards to the appropriate decks:
   - 13 cards go to their primary deck.
   - 1 card goes to each helper deck on the side (4/player).
-  - Rest of the are put to the secondary deck.
+  - Rest of cards are put to the secondary deck.
 
 Now the table should look like this:
   
