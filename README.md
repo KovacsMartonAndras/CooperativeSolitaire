@@ -27,7 +27,7 @@ The players on their turn must check their possible moves and make the one which
 
 Placing rules:
 - The main deck must be built up from ace to king from the same symbol (spades,clubs,hearts,diamonds), meaning an ace can always be placed into one of the empty main decks and if the king is placed onto the main deck, it is considered finished.
-- If a helper deck is empty any card can be placed there, otherwise the card to be placed has to have a value less than the top of the helper deck and of the opposite colour(red/black).
+- If a helper deck is empty any card can be placed there, otherwise the card to be placed has to have a value exactly one less than the top of the helper deck and of the opposite colour(red/black).
 - If a player wants to place a card onto the opponents pile, the card in quesiton has to be of the same colour(red/black) and its value must be adjecent to the card of the opponents deck. (eg. A spades of 7 can be placed onto the opponents deck (primary or throwaway if the top card is black and has a value of 8 or 6)
 
 The priority of moves are as follows:
