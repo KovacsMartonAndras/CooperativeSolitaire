@@ -19,7 +19,7 @@ class Table{
         std::vector<std::vector<Card>> helper_decks; 
         Table():main_decks(8){}
 
-};
+}; // Move table class to seperate file
 
 class Player {
 public:
@@ -28,8 +28,9 @@ public:
     std::vector<Card> secondary_deck;
     std::vector<Card> throwaway_deck;
 
-    float tendency_to_throw;
-    float tendency_to_throw_on_primary;
+    // Between [0,1], probality to throw on pile
+    float tendency_to_throw; // Overall
+    float tendency_to_throw_on_primary; 
     float tendency_to_throw_on_throwaway;
 
     // Constructor
@@ -43,6 +44,7 @@ public:
     bool handle_throw_on_opponent_throwaway();
     // Helper functions
     bool hand_empty();
+    bool get_decision(float probability);
     void reshuffle_throwaway_to_secondary();
 
 };
@@ -53,19 +55,30 @@ implements the rules and simulates the game
 */
 class Game {
 public:
-    Game(Player player_1, Player player_2, unsigned int max_turns = 200, bool debug_mode = false);
+    Game(Player player_1, Player player_2, unsigned int max_turns = 500, bool debug_mode = false);
     bool DEBUGMODE;
     unsigned int MAX_TURNS;
+    unsigned int current_player_index;
     // 
     void start_game();
+
+    //Simulation functions
     bool perform_checks(Player* c_player);
     bool check_main_deck();  // Non dependent on current player
     bool check_primary(Player* c_player);
     bool check_secondary(Player* c_player);
     bool check_opponents_piles(Player* c_player);
+    bool check_throw_availability(std::vector<Card>& source_deck,std::vector<Card>& target_deck, bool throw_flag);
+
+    //Card management
     bool move_card_to_deck(std::vector<Card>& source_deck, std::vector<Card>& target_deck);
 
     // Helper functions
+    Player* get_current_player();
+    Player* get_other_player();
+
+
+    //Prints
     void printTable();
     void printNumberOfCards(Player* c_player);
     void printHandsOfPlayer();

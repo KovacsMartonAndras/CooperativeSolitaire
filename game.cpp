@@ -34,7 +34,7 @@ Game::Game(Player p_1,Player p_2 , unsigned int max_turns, bool debugmode)
         for(unsigned int i=0; i < 4 ; i++)
         {
             table.helper_decks.push_back(std::vector<Card>());  // Add empty vector for new deck
-            move_card_to_deck(deck.cards,table.helper_decks.at(i+offset));
+            move_card_to_deck(deck.cards,table.helper_decks.at(i+offset)); // Using offset to have one unified helper deck instead of two
 
         }
         if (DEBUGMODE){std::cout << "Number of cards in "<< player.name <<" helper deck: " << table.helper_decks.size() << std::endl;};
@@ -55,35 +55,37 @@ Game::Game(Player p_1,Player p_2 , unsigned int max_turns, bool debugmode)
 void Game::start_game()
 {
     // Player 1 starts
-    int current_player_index = 1;
-    Player* c_player = &players.at(!current_player_index);
+    current_player_index = 0;
+    Player* c_player = &players.at(current_player_index);
+
     unsigned int turn_counter = 0;
     bool infinite_game = false;
 
     // Both Players are not out of the game
     while(!(players.at(0).hand_empty() || players.at(1).hand_empty()))
     {
+        // TODO: Check current Round and return winner accordingly
         if (turn_counter > MAX_TURNS)
         {
             infinite_game = true;
             break;
         }
 
-        // Player 1 starts
+        //std::cout<< "Current Player: " << c_player->name << std::endl;
+        while(perform_checks(c_player) && !c_player->hand_empty()); // Perform checks and move cards until no move is possible
+        if (DEBUGMODE){printNumberOfCards(c_player);};
+        if(c_player->hand_empty()){ break;}; // Player hand empty, give turn to other player for chance to finish TODO:
+        // Switch player
         c_player = &players.at(!current_player_index);
         current_player_index = !current_player_index;  // Invert current player index
-
-        //std::cout<< "Current Player: " << c_player->name << std::endl;
-        while(perform_checks(c_player)); // Perform checks and move cards until no move is possible
-        if (DEBUGMODE){printNumberOfCards(c_player);};
         turn_counter += 1;
     }
 
     if (!infinite_game)
     {
         std::cout<< "End of game" << std::endl;
-    std::cout << "Number of turns: " << turn_counter << std::endl;
-    players.at(0).hand_empty() ? std::cout << "Winner: Player 1" << std::endl : std::cout << "Winner: Player 2" << std::endl ;
+        std::cout << "Number of turns: " << turn_counter << std::endl;
+        players.at(0).hand_empty() ? std::cout << "Winner: Player 1" << std::endl : std::cout << "Winner: Player 2" << std::endl ;
     }
     else{
         std::cout<< "Game could not be finised" << std::endl;
@@ -160,6 +162,7 @@ bool Game::check_main_deck()
     return false;
 }
 
+// Check if logic is the same, refactor into one function (check_deck(primary/secondary))
 bool Game::check_primary(Player* c_player){
    
     if(c_player->primary_deck.empty())
@@ -278,17 +281,59 @@ bool Game::check_secondary(Player* c_player)
 }
 bool Game::check_opponents_piles(Player* c_player)
 {
-    //Check primary availability
-    if(c_player->handle_throw_on_opponent())
+    if(c_player->handle_throw_on_opponent()) // Overall throw rate
     {
-        if(c_player->primary_deck.empty())
+        Player* other_player = get_other_player();
+        bool moved = false;
+        moved = check_throw_availability(c_player->primary_deck,other_player->primary_deck,c_player->get_decision(c_player->tendency_to_throw_on_primary));
+        if(!moved)
         {
-        return false;
+            moved = check_throw_availability(c_player->primary_deck,other_player->throwaway_deck,c_player->get_decision(c_player->tendency_to_throw_on_throwaway));
         }
-        //TODO...
+        if(!moved)
+        {
+            moved = check_throw_availability(c_player->secondary_deck,other_player->primary_deck,c_player->get_decision(c_player->tendency_to_throw_on_primary));
+        }
+        if(!moved)
+        {
+            moved = check_throw_availability(c_player->secondary_deck,other_player->throwaway_deck,c_player->get_decision(c_player->tendency_to_throw_on_throwaway));
+        }
+        return moved;
     }
     return false; // No card is thrown
 
+}
+
+bool Game::check_throw_availability(std::vector<Card>& source_deck,std::vector<Card>& target_deck, bool throw_flag)
+{
+    if((source_deck.empty() || target_deck.empty()))
+    {
+        return false;
+    }
+
+    if(source_deck.back().color == target_deck.back().color && 
+    (source_deck.back().value == (target_deck.back().value - 1)||
+    source_deck.back().value == (target_deck.back().value + 1)))
+    {
+        // Can throw primary card onto other player's primary deck, No corner case of ace card
+        // on opponent's primary since it would have been already placed out to main deck
+        if(throw_flag)
+        {
+            // if (DEBUGMODE){std::cout<< "Placed card on opponent's pile " << std::endl;};
+            std::cout<< "Placed card on opponent's pile " << std::endl;
+            return move_card_to_deck(source_deck,target_deck);
+        }
+    }
+    return false;
+}
+
+Player* Game::get_current_player()
+{
+    return &players.at(current_player_index);
+}
+Player* Game::get_other_player()
+{
+    return &players.at(!current_player_index);
 }
 
 void Game::printTable(){
@@ -297,7 +342,6 @@ void Game::printTable(){
     printHelper();
     
 };
-
 void Game::printNumberOfCards(Player* c_player)
 {
     std::cout<< c_player->name << std::endl;
@@ -342,7 +386,6 @@ void Game::printHandsOfPlayer()
     }
     
 };
-
 void Game::printMain(){
     std::cout << "State of Main Decks" << "--------------------" << std::endl;
     for (auto deck : table.main_decks){
@@ -352,7 +395,6 @@ void Game::printMain(){
         }
     }
 }
-
 void Game::printHelper(){
     std::cout << "State of Helper Decks" << "--------------------" << std::endl;
 
@@ -371,7 +413,6 @@ std::string Game::cardValueToName(unsigned int value){
         default: return std::to_string(value);
     }
 }
-
 std::string Game::cardColorToName(unsigned int color){
     switch (color) {
         case 0: return "Clubs";
@@ -415,21 +456,9 @@ void Player::reshuffle_throwaway_to_secondary()
 
     //std::cout<< "Reshuffled throwaway to secondary" << std::endl;
 }
-bool Player::handle_throw_on_opponent()
-{
-    return get_decision(tendency_to_throw); // Don't throw card
-}
-bool Player::handle_throw_on_opponent_primary()
-{
-    return get_decision(tendency_to_throw_on_primary); // Don't throw card
-}
-bool Player::handle_throw_on_opponent_throwaway()
-{
-    return get_decision(tendency_to_throw_on_throwaway); // Don't throw card
-}
 
 
-bool get_decision(float probability) {
+bool Player::get_decision(float probability) {
     if (probability == 1)
     {
         return true;
@@ -444,4 +473,17 @@ bool get_decision(float probability) {
 
     // Generate a random float and compare it with the probability
     return dist(generator) < probability;
+}
+
+bool Player::handle_throw_on_opponent()
+{
+    return get_decision(tendency_to_throw); // Don't throw card
+}
+bool Player::handle_throw_on_opponent_primary()
+{
+    return get_decision(tendency_to_throw_on_primary); // Don't throw card
+}
+bool Player::handle_throw_on_opponent_throwaway()
+{
+    return get_decision(tendency_to_throw_on_throwaway); // Don't throw card
 }
