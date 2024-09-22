@@ -38,7 +38,7 @@ The priority of moves are as follows:
     - Take a card from the secondary deck
 - *2.* Fill the helper decks :
   - Which card to take?
-    - Either take a card from the primary deck *OR* pick a helper deck that has only one card and move that card on top of the other helper deck. 
+    - Either take a card from the primary deck *OR* pick a helper deck that has only one card and move that card on top of the other helper deck. Then move the primary to the open place of the helper deck.
     - Take a card from the secondary deck
 - *3.* (*Optional*) Fill the primary or throwaway deck of the opponent.
   - Which card to take?
