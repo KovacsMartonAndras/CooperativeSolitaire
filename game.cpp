@@ -101,14 +101,14 @@ bool Game::perform_checks(Player* c_player)
     if(!moved){
         // check_primary
         //std::cout<< "Performing Primary Deck checks" << std::endl;
-        moved = check_primary(c_player);
+        moved = check_deck(c_player, c_player->primary_deck);
     }
     
     
     if(!moved){
        // check_secondary
         //std::cout<< "Performing Secondary Deck checks" << std::endl;
-        moved = check_secondary(c_player); 
+        moved = check_deck(c_player, c_player->secondary_deck);
     }
     
     // This is where checking if throw to opponents pile would be checked and the handle function from the player is called
@@ -162,123 +162,56 @@ bool Game::check_main_deck()
     return false;
 }
 
-// Check if logic is the same, refactor into one function (check_deck(primary/secondary))
-bool Game::check_primary(Player* c_player){
-   
-    if(c_player->primary_deck.empty())
-    {
+
+bool Game::check_deck(Player* c_player, std::vector<Card>& deck) {
+    if (deck.empty()) {
         return false;
     }
 
-    Card* current_card = &c_player->primary_deck.back();
-   
-    //std::cout<<"Current Card: " << cardColorToName(current_card->color) << " " << cardValueToName(current_card->value) << std::endl;
-    // Checking Main deck for available moves
-    for (auto& main_deck : table.main_decks)
-    {
-        if(current_card->value == 1)
-        {
-            if(!main_deck.empty())
-            {
+    Card* current_card = &deck.back();
+
+    // Checking main decks for available moves
+    for (auto& main_deck : table.main_decks) {
+        if (current_card->value == 1) {
+            if (!main_deck.empty()) {
                 continue;
+            } else {
+                std::cout << "Moved " << cardColorToName(current_card->color) << " "
+                          << cardValueToName(current_card->value) << " from deck to main deck" << std::endl;
+                return move_card_to_deck(deck, main_deck);
             }
-            else{
-                std::cout<< "Moved " << cardColorToName(current_card->color) << " " << cardValueToName(current_card->value) << " from primary deck to main deck"<< std::endl;
-                return move_card_to_deck(c_player->primary_deck,main_deck);
-            }
-        }
-        else if (!main_deck.empty())
-        {
+        } else if (!main_deck.empty()) {
             if (current_card->color == main_deck.back().color &&
-            current_card->value == (main_deck.back().value + 1))
-            {
-            // Can fill main deck from helper
-            std::cout<< "Moved " << cardColorToName(current_card->color) << " " << cardValueToName(current_card->value) 
-            << " from primary deck onto " << cardColorToName(main_deck.back().color) << " " << cardValueToName(main_deck.back().value) << " in main deck"<< std::endl;
-            return move_card_to_deck(c_player->primary_deck,main_deck);
+                current_card->value == (main_deck.back().value + 1)) {
+                std::cout << "Moved " << cardColorToName(current_card->color) << " "
+                          << cardValueToName(current_card->value) << " from deck onto "
+                          << cardColorToName(main_deck.back().color) << " "
+                          << cardValueToName(main_deck.back().value) << " in main deck" << std::endl;
+                return move_card_to_deck(deck, main_deck);
             }
         }
-    }    
+    }
 
     // Checking helper decks for available moves
-    for (auto& helper_deck : table.helper_decks)
-    {
-        if (!helper_deck.empty())
-        {
+    for (auto& helper_deck : table.helper_decks) {
+        if (!helper_deck.empty()) {
             if ((current_card->color % 2 == 0 ^ helper_deck.back().color % 2 == 0) &&
-            current_card->value == (helper_deck.back().value - 1))
-            {
-                // Can fill helper_deck from primary
-                std::cout<< "Moved " << cardColorToName(current_card->color) << " " << cardValueToName(current_card->value) 
-                << " onto " << cardColorToName(helper_deck.back().color) << " " << cardValueToName(helper_deck.back().value) << " from primary deck to helper deck"<< std::endl;
-                return move_card_to_deck(c_player->primary_deck,helper_deck);
+                current_card->value == (helper_deck.back().value - 1)) {
+                std::cout << "Moved " << cardColorToName(current_card->color) << " "
+                          << cardValueToName(current_card->value) << " onto "
+                          << cardColorToName(helper_deck.back().color) << " "
+                          << cardValueToName(helper_deck.back().value) << " from deck to helper deck" << std::endl;
+                return move_card_to_deck(deck, helper_deck);
             }
+        } else if (helper_deck.empty() && c_player->primary_deck.empty()) {
+            // Place is empty, and primary deck is also empty, simply put it out
+            return move_card_to_deck(deck, helper_deck);
         }
-        else
-        {
-            return move_card_to_deck(c_player->primary_deck,helper_deck);
-        }
-    }    
-    return false;
-}
-bool Game::check_secondary(Player* c_player)
-{
-
-    if(c_player->secondary_deck.empty())
-    {
-        return false;
     }
 
-    Card* current_card = &c_player->secondary_deck.back();
-    
-    for (auto& main_deck : table.main_decks)
-    {
-        if(current_card->value == 1)
-        {
-            if(!main_deck.empty())
-            {
-                continue;
-            }
-            else{
-                std::cout<< "Moved " << cardColorToName(current_card->color) << " " << cardValueToName(current_card->value) << " from secondary deck to main deck"<< std::endl;
-                return move_card_to_deck(c_player->secondary_deck,main_deck);
-            }
-        }
-        else if (!main_deck.empty())
-        {
-            if (current_card->color == main_deck.back().color &&
-            current_card->value == (main_deck.back().value + 1))
-            {
-            // Can fill main deck from helper
-            std::cout<< "Moved " << cardColorToName(current_card->color) << " " << cardValueToName(current_card->value) 
-            << " from secondary deck onto " << cardColorToName(main_deck.back().color) << " " << cardValueToName(main_deck.back().value) << " in main deck"<< std::endl;
-             return move_card_to_deck(c_player->secondary_deck, main_deck);
-            }
-        }
-    }    
-
-    // Checking helper decks for available moves
-    for (auto& helper_deck : table.helper_decks)
-    {
-        if (!helper_deck.empty())
-        {
-        if ((current_card->color % 2 == 0 ^ helper_deck.back().color % 2 == 0) &&
-        current_card->value == (helper_deck.back().value - 1))
-        {
-            // Can fill helper_deck from secondary
-            std::cout<< "Moved " << cardColorToName(current_card->color) << " " << cardValueToName(current_card->value) 
-            << " onto " << cardColorToName(helper_deck.back().color) << " " << cardValueToName(helper_deck.back().value) << " from secondary deck to helper deck"<< std::endl;
-            return move_card_to_deck(c_player->secondary_deck,helper_deck);
-        }
-        }
-        else if (helper_deck.empty() && c_player->primary_deck.empty())
-        {
-            //Place is empty and primary deck is also empty, simply put it out
-             return move_card_to_deck(c_player->secondary_deck,helper_deck);
-        }
-    }    
     return false;
 }
+
 bool Game::check_opponents_piles(Player* c_player)
 {
     if(c_player->handle_throw_on_opponent()) // Overall throw rate

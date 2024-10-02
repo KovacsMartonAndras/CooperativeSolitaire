@@ -65,8 +65,7 @@ public:
     //Simulation functions
     bool perform_checks(Player* c_player);
     bool check_main_deck();  // Non dependent on current player
-    bool check_primary(Player* c_player);
-    bool check_secondary(Player* c_player);
+    bool check_deck(Player* c_player, std::vector<Card>& deck);
     bool check_opponents_piles(Player* c_player);
     bool check_throw_availability(std::vector<Card>& source_deck,std::vector<Card>& target_deck, bool throw_flag);
 

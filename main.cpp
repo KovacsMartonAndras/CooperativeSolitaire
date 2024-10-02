@@ -7,7 +7,6 @@ int main() {
     Game game(p_1,p_2);
     game.start_game(); 
 
-    
 
     return 0;
 }
