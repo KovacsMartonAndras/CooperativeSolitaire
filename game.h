@@ -59,13 +59,14 @@ public:
     bool DEBUGMODE;
     unsigned int MAX_TURNS;
     unsigned int current_player_index;
-    // 
+    unsigned int starter_player_index;
+
     void start_game();
 
     //Simulation functions
     bool perform_checks(Player* c_player);
     bool check_main_deck();  // Non dependent on current player
-    bool check_deck(Player* c_player, std::vector<Card>& deck);
+    bool check_deck(Player* c_player, std::vector<Card>& deck, std::string name);
     bool check_opponents_piles(Player* c_player);
     bool check_throw_availability(std::vector<Card>& source_deck,std::vector<Card>& target_deck, bool throw_flag);
 
