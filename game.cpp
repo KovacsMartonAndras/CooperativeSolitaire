@@ -65,19 +65,29 @@ void Game::start_game()
     while(!(players.at(0).hand_empty() || players.at(1).hand_empty()))
     {
         // TODO: Check current Round and return winner accordingly
-        if (turn_counter > MAX_TURNS)
+        if (turn_counter >= MAX_TURNS)
         {
             infinite_game = true;
             break;
         }
 
-        //std::cout<< "Current Player: " << c_player->name << std::endl;
+//        std::cout<< "Current Player: " << c_player->name << std::endl;
         while(perform_checks(c_player) && !c_player->hand_empty()); // Perform checks and move cards until no move is possible
-        if (DEBUGMODE){printNumberOfCards(c_player);};
-        if(c_player->hand_empty()){ break;}; // Player hand empty, give turn to other player for chance to finish TODO:
+        if (DEBUGMODE){printNumberOfCards(c_player);}
+//        Player hand empty, current player didn't start, game ended
+        if(c_player->hand_empty() && current_player_index == 1){
+            break;
+        }
+        // Player hand empty, current player started, give turn to other player for chance to finish
+        if(c_player->hand_empty() && current_player_index == 0){
+            current_player_index = !current_player_index;
+            c_player = &players.at(current_player_index);
+            while(perform_checks(c_player) && !c_player->hand_empty());
+            break;
+        }
         // Switch player
-        c_player = &players.at(!current_player_index);
         current_player_index = !current_player_index;  // Invert current player index
+        c_player = &players.at(current_player_index);
         turn_counter += 1;
     }
 
@@ -85,10 +95,15 @@ void Game::start_game()
     {
         std::cout<< "End of game" << std::endl;
         std::cout << "Number of turns: " << turn_counter << std::endl;
-        players.at(0).hand_empty() ? std::cout << "Winner: Player 1" << std::endl : std::cout << "Winner: Player 2" << std::endl ;
+        if(players.at(0).hand_empty() && players.at(1).hand_empty()){
+            std::cout << "Tie" << std::endl;
+        } else{
+            players.at(0).hand_empty() ? std::cout << "Winner: Player 1" << std::endl : std::cout << "Winner: Player 2" << std::endl ;
+        }
+
     }
     else{
-        std::cout<< "Game could not be finised" << std::endl;
+        std::cout<< turn_counter << " Game could not be finised" << std::endl;
     }
 }
 bool Game::perform_checks(Player* c_player)
@@ -177,14 +192,14 @@ bool Game::check_deck(Player* c_player, std::vector<Card>& deck) {
                 continue;
             } else {
                 std::cout << "Moved " << cardColorToName(current_card->color) << " "
-                          << cardValueToName(current_card->value) << " from deck to main deck" << std::endl;
+                          << cardValueToName(current_card->value) << " from primary/secondary deck to main deck" << std::endl;
                 return move_card_to_deck(deck, main_deck);
             }
         } else if (!main_deck.empty()) {
             if (current_card->color == main_deck.back().color &&
                 current_card->value == (main_deck.back().value + 1)) {
                 std::cout << "Moved " << cardColorToName(current_card->color) << " "
-                          << cardValueToName(current_card->value) << " from deck onto "
+                          << cardValueToName(current_card->value) << " from primary/secondary deck onto "
                           << cardColorToName(main_deck.back().color) << " "
                           << cardValueToName(main_deck.back().value) << " in main deck" << std::endl;
                 return move_card_to_deck(deck, main_deck);
@@ -200,7 +215,7 @@ bool Game::check_deck(Player* c_player, std::vector<Card>& deck) {
                 std::cout << "Moved " << cardColorToName(current_card->color) << " "
                           << cardValueToName(current_card->value) << " onto "
                           << cardColorToName(helper_deck.back().color) << " "
-                          << cardValueToName(helper_deck.back().value) << " from deck to helper deck" << std::endl;
+                          << cardValueToName(helper_deck.back().value) << " from primary/secondary deck to helper deck" << std::endl;
                 return move_card_to_deck(deck, helper_deck);
             }
         } else if (helper_deck.empty() && c_player->primary_deck.empty()) {
