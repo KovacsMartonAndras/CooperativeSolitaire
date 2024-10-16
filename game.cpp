@@ -94,8 +94,11 @@ void Game::start_game()
         }
 
 //        std::cout<< "Current Player: " << c_player->name << std::endl;
-        while(perform_checks(c_player) && !c_player->hand_empty()); // Perform checks and move cards until no move is possible
+
+        run_current_player(c_player);
+
         if (DEBUGMODE){printNumberOfCards(c_player);}
+
 //        Player hand empty, current player didn't start, game ended
         if(c_player->hand_empty() && current_player_index != starter_player_index){
             break;
@@ -104,7 +107,7 @@ void Game::start_game()
         if(c_player->hand_empty() && current_player_index == starter_player_index){
             current_player_index = !current_player_index;
             c_player = &players.at(current_player_index);
-            while(perform_checks(c_player) && !c_player->hand_empty());
+            run_current_player(c_player);
             break;
         }
         // Switch player
@@ -117,6 +120,7 @@ void Game::start_game()
     {
         std::cout<< "End of game" << std::endl;
         std::cout << "Number of turns: " << turn_counter << std::endl;
+
         if(players.at(0).hand_empty() && players.at(1).hand_empty()){
             std::cout << "Tie" << std::endl;
         } else{
@@ -128,6 +132,12 @@ void Game::start_game()
         std::cout<< turn_counter << " Game could not be finished" << std::endl;
     }
 }
+
+// Performs the moves of the player until it can perform valid ones
+void Game::run_current_player(Player* c_player){
+    while(perform_checks(c_player) && !c_player->hand_empty());
+}
+
 bool Game::perform_checks(Player* c_player)
 {
     bool moved = false;

@@ -66,6 +66,8 @@ public:
 
     void start_game();
 
+    void run_current_player(Player* c_player);
+
     //Simulation functions
     bool perform_checks(Player* c_player);
     bool check_main_deck();  // Non dependent on current player
