@@ -2,14 +2,17 @@
 #include <iostream>
 #include <algorithm>  
 #include <utility>
+#include "logger.h"
 
-Game::Game(Player p_1,Player p_2 , unsigned int max_turns, bool debugmode)
+
+
+Game::Game(Player p_1,Player p_2 , bool log_on, unsigned int max_turns, bool debugmode)
 {
-   
     players.push_back(p_1);
     players.push_back(p_2);
 
     DEBUGMODE = debugmode;
+    LOG_ON  = log_on;
     MAX_TURNS = max_turns;
 
     std::random_device rd;
@@ -20,9 +23,10 @@ Game::Game(Player p_1,Player p_2 , unsigned int max_turns, bool debugmode)
 
     // Generate a random index from the list
     starter_player_index = distr(gen);
-//    Make the current player the starting one
+    // Make the current player the starting one
     current_player_index = starter_player_index;
 
+    //if (LOG_ON) {logger.log("Test Log");};
     if (DEBUGMODE){std::cout << "Dealing cards" << std::endl;};
 
     unsigned int player_count = 0; // Used as an offset in the init of helper decks
@@ -65,8 +69,18 @@ Game::Game(Player p_1,Player p_2 , unsigned int max_turns, bool debugmode)
 
 void Game::start_game()
 {
+    logger.set_game_instance(this); // Workaround for circular dependency
     Player* c_player = &players.at(current_player_index);
-
+    
+    // Start game loggings
+    if (LOG_ON)
+    {
+        logger.log_player_stats(&players.at(0));
+        logger.log_player_stats(&players.at(1));
+        logger.log(std::to_string(current_player_index));
+        logger.log_table_state();
+    }
+    
     unsigned int turn_counter = 0;
     bool infinite_game = false;
 
@@ -157,7 +171,11 @@ bool Game::check_main_deck()
 {
     for (auto& helper_deck : table.helper_decks){
         for (auto& main_deck : table.main_decks){
-            if(helper_deck.back().value == 1)
+            if(helper_deck.empty())
+            {
+                continue; // Making sure the deck is accessible
+            }
+            if(helper_deck.back().value == 1) // TODO:Check back Here
             {
                 if(!main_deck.empty())
                 {
@@ -290,6 +308,11 @@ Player* Game::get_current_player()
 Player* Game::get_other_player()
 {
     return &players.at(!current_player_index);
+}
+
+Table* Game::get_table()
+{
+    return &table;
 }
 
 void Game::printTable(){

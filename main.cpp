@@ -4,7 +4,7 @@
 int main() {
     Player p_1("Player 1",1.0,0,1.0);
     Player p_2("Player 2");
-    Game game(p_1,p_2);
+    Game game(p_1,p_2,true);
     game.start_game(); 
 
 

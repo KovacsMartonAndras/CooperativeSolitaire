@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <random>
 #include "deck.h" 
+#include "logger.h"
 
 /*
 Class that holds the state of the table
@@ -55,8 +56,10 @@ implements the rules and simulates the game
 */
 class Game {
 public:
-    Game(Player player_1, Player player_2, unsigned int max_turns = 500, bool debug_mode = false);
+    Game(Player player_1, Player player_2, bool log_on, unsigned int max_turns = 500, bool debug_mode = false);
     bool DEBUGMODE;
+    bool LOG_ON;
+    Logger logger;
     unsigned int MAX_TURNS;
     unsigned int current_player_index;
     unsigned int starter_player_index;
@@ -76,7 +79,7 @@ public:
     // Helper functions
     Player* get_current_player();
     Player* get_other_player();
-
+    Table* get_table();
 
     //Prints
     void printTable();
