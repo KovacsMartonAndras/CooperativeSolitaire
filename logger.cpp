@@ -7,20 +7,23 @@
 
 //Time
 #include <iomanip>
+#include <chrono>
 #include <ctime>
 
 #include "game.h"
 
+// Initialize the static counter
+int Logger::log_counter = 0;
+
 std::string get_time()
 {
-    auto t = std::time(nullptr);
-    auto tm = *std::localtime(&t);
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+    std::tm tm = *std::localtime(&now_time);
 
     std::ostringstream oss;
-    oss << std::put_time(&tm, "%Y-%m-%d %H-%M-%S");
-    auto str = oss.str();
-
-    return str;
+    oss << std::put_time(&tm, "%Y%m%d_%H%M%S"); // Format: YYYYMMDD_HHMMSS
+    return oss.str();
 }
 void Logger::log(const std::string& logmessage) {
     std::ofstream logFile(log_filename, std::ios_base::app); 
@@ -33,11 +36,9 @@ void Logger::log(const std::string& logmessage) {
 }
 
 Logger::Logger()
-    
 {
-    log_filename = "Game_Log_" + get_time() + ".txt";
+    log_filename = "log_" + get_time() + "_" + std::to_string(log_counter++) + ".txt";
 }
-
 void Logger::set_game_instance(Game* game_instance)
 {
     game = game_instance;
@@ -144,7 +145,6 @@ std::string Logger::log_card(Card* card)
     }
     else
     {
-        std::cout << game->cardColorToName(card->color);
         std::ostringstream oss;
         oss << "(" << card->color <<";"<< card->value << ")";
         auto str = oss.str();

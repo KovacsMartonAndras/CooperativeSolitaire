@@ -24,8 +24,6 @@ class Logger{
         void log_helpers();
         void log_player_stats(Player* player);
         
-        void log_move();
-        
         void log_current_player_start(unsigned int player_index);
         void log_current_player_end();
         
@@ -34,6 +32,7 @@ class Logger{
         std::string log_card(Card* card);
     private:
         Game* game;
+        static int log_counter;
 };
 
 #endif
