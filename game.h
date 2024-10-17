@@ -64,7 +64,7 @@ public:
     unsigned int current_player_index;
     unsigned int starter_player_index;
 
-    void start_game();
+    int start_game();
 
     void run_current_player(Player* c_player);
 

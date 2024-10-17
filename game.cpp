@@ -56,7 +56,7 @@ Game::Game(Player p_1,Player p_2 , bool log_on, unsigned int max_turns, bool deb
     }
 }
 
-void Game::start_game()
+int Game::start_game()
 {
     logger.set_game_instance(this); // Workaround for circular dependency
     Player* c_player = &players.at(current_player_index);
@@ -102,30 +102,34 @@ void Game::start_game()
 
     if (!infinite_game)
     {
-        //std::cout<< "End of game" << std::endl;
-        //std::cout << "Number of turns: " << turn_counter << std::endl;
-
         if(players.at(0).hand_empty() && players.at(1).hand_empty()){
-            std::cout << "Tie" << std::endl;
+            //std::cout << "Tie" << std::endl;
             if(LOG_ON)
             {
                 logger.log("Tie");
             }
+            return 0;
         } else{
-            players.at(0).hand_empty() ? std::cout << "Winner: Player 1" << std::endl : std::cout << "Winner: Player 2" << std::endl ;
+            // players.at(0).hand_empty() ? std::cout << "Winner: Player 1" << std::endl : std::cout << "Winner: Player 2" << std::endl ;
             if(LOG_ON)
             {
                players.at(0).hand_empty() ? logger.log("Winner: Player 1")  : logger.log("Winner: Player 2");
+            }
+            if(players.at(0).hand_empty())
+            {
+                return 1;
+            }
+            else
+            {
+                return 2;
             }
         }
 
     }
     else{
-        std::cout<< turn_counter << " Game could not be finished" << std::endl;
-        if (LOG_ON)
-        {
-            logger.log(" Game could not be finished");
-        }
+        //std::cout<< turn_counter << " Game could not be finished" << std::endl;
+        if (LOG_ON){logger.log(" Game could not be finished");};
+        return -1;
     }
 }
 
