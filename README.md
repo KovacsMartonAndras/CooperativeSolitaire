@@ -47,3 +47,6 @@ The priority of moves are as follows:
 
 If a player cannot perform any of these moves, they must put the top card of their secondary deck to their throwaway deck and the other player's turn starts. 
 In case the throwaway deck runs out of cards and their throwaway deck still has cards, take the throwaway deck, flip it(The order of the cards must remain the same, as in the lastly thrown card has to be at the bottom of the deck) and it will be the new secondary deck of the player. 
+
+**Logging Documentation**
+TODO...
