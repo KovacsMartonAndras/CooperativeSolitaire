@@ -49,4 +49,6 @@ If a player cannot perform any of these moves, they must put the top card of the
 In case the throwaway deck runs out of cards and their throwaway deck still has cards, take the throwaway deck, flip it(The order of the cards must remain the same, as in the lastly thrown card has to be at the bottom of the deck) and it will be the new secondary deck of the player. 
 
 **Logging Documentation**
+-
+
 TODO...
