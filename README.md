@@ -50,5 +50,25 @@ In case the throwaway deck runs out of cards and their throwaway deck still has 
 
 **Logging Documentation**
 -
+Logger class added that takes care of log calls. In *logger.h* it is possible to change the logging symbols, that define a clear boundary between different log calls.
+At the start of the game, the stats of each player is logged,
+ - (overall_throw_tendency_player_1, primary_throw_tendency_player_1, throwaway_throw_tendency_player_1)
+ - (overall_throw_tendency_player_2, primary_throw_tendency_player_2, throwaway_throw_tendency_player_2)
+   
+Then the starting player index:
+ - starting player index
+After that the *state of the game* is given in the following format:
+ - log_table_symbol
+ - (Player_1_primary_top_card,Player_1_secondary_top_card,Player_1_throwaway_top_card)
+ - (Player_2_primary_top_card,Player_2_secondary_top_card,Player_2_throwaway_top_card)
+ - Main Decks
+ - Helper decks top cards
+ - log_table_symbol
 
-TODO...
+Then the game start and the starter player starts their moves. The *log_current_player_rounds* symbol marks the start and end of a player's round. The current player index is also logged after the start symbol, divided by a comma.
+ - *log_current_player_rounds*, current_player_index
+ - snapshots of game in the format of *state of the game*, described above
+ - *log_current_player_rounds*
+Then the next player's moves are logged in the same way, marked by the same format except that the current_player_index is obviously, different.
+
+On the last line of the logging file, the result of the game is logged. 
