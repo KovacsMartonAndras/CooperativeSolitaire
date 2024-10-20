@@ -16,8 +16,7 @@ class Logger{
         void set_game_instance(Game* game_instance);
 
         std::string log_current_player_rounds = "-1";
-        std::string log_move_symbol = "-2";
-        std::string log_table_symbol = "-3";
+        std::string log_table_symbol = "-2";
         std::string empty_deck_symbol = "_";
         void log_table_state();
         void log_mains();

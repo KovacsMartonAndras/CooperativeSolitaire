@@ -4,7 +4,7 @@
 int main() {
     Player p_1("Player 1",0.0,0,1.0);
     Player p_2("Player 2",1.0,1.0,1.0);
-    unsigned int nr_of_games = 1000;
+    unsigned int nr_of_games = 1;
     unsigned int p_1_cnt = 0;
     unsigned int p_2_cnt = 0;
     unsigned int tie_cnt = 0;
@@ -13,7 +13,7 @@ int main() {
 
     for (unsigned int game_cnt = 0; game_cnt < nr_of_games; game_cnt++)
     {
-        Game game(p_1,p_2,false);
+        Game game(p_1,p_2,true);
         result = game.start_game();
         if (result == -1)
         {
